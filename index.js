@@ -86,7 +86,7 @@ async function actualizarEstado() {
         { name: '<a:Arrow:1384710523970392115> Jugadores', value: `${players}/${maxPlayers}`, inline: true },
         { name: '<a:Arrow:1384710523970392115> MOTD', value: motd }
       )
-      .setFooter({ text: "Se actualiza automáticamente cada 5 minutos ⏳" })
+      .setFooter({ text: "Se actualiza automáticamente cada 2 minutos ⏳" })
       .setTimestamp();
 
     if (estadoMsg) {
@@ -132,5 +132,6 @@ client.on("interactionCreate", async interaction => {
 // Login del bot
 // =======================
 client.login(process.env.TOKEN);
+
 
 
