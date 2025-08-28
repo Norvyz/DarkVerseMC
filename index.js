@@ -56,7 +56,7 @@ for (const file of commandFiles) {
 // =======================
 const SERVER_IP = "DarkVerseeMC.aternos.me"; // 👈 tu IP del server
 const API_URL = `https://api.mcstatus.io/v2/status/java/${SERVER_IP}`;
-const ESTADO_CHANNEL_ID = "ID_DEL_CANAL"; // 👈 cámbialo por el canal real
+const ESTADO_CHANNEL_ID = "1410707017483681943"; // 👈 cámbialo por el canal real
 const UPDATE_INTERVAL = 5 * 60 * 1000; // cada 5 minutos
 
 async function actualizarEstado() {
@@ -132,3 +132,4 @@ client.on("interactionCreate", async interaction => {
 // Login del bot
 // =======================
 client.login(process.env.TOKEN);
+
