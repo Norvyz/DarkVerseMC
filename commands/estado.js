@@ -1,6 +1,8 @@
 // commands/estado.js
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const fetch = require('node-fetch');
+const util = require("minecraft-server-util");
+
+const SERVER_IP = "DarkVerseeMC.aternos.me";
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -10,36 +12,41 @@ module.exports = {
   async execute(interaction) {
     await interaction.deferReply(); // por si tarda
 
-    const ip = "DarkVerseeMC.aternos.me"; // <-- tu IP aquí
-    const apiUrl = `https://api.mcstatus.io/v2/status/java/${ip}`;
-
     try {
-      const res = await fetch(apiUrl);
-      const data = await res.json();
-
-      let online = data.online ? "🟢 Online" : "🔴 Offline";
-      let players = data.players?.online || 0;
-      let maxPlayers = data.players?.max || 0;
-      let version = data.version?.name_clean || "Desconocida";
-      let motd = data.motd?.clean || "Sin MOTD";
+      const status = await util.status(SERVER_IP, undefined, {
+        timeout: 5000,
+        enableSRV: true
+      });
 
       const embed = new EmbedBuilder()
-        .setColor(data.online ? 0x00ff00 : 0xff0000)
-        .setTitle(`<a:mcbeespin:1410336563497406514> Estado del Servidor`)
-        .setDescription(`IP: **${ip}**\nVersión: **${version}**`)
+        .setColor(0x00ff00)
+        .setTitle(`Estado del Servidor`)
+        .setDescription(`IP: **${SERVER_IP}:${status.port}**\nVersión: **${status.version.name}**`)
         .addFields(
-          { name: '<a:Arrow:1384710523970392115> Estado', value: online, inline: true },
-          { name: '<a:Arrow:1384710523970392115> Jugadores', value: `${players}/${maxPlayers}`, inline: true },
-          { name: '<a:Arrow:1384710523970392115> MOTD', value: motd }
+          { name: 'Estado', value: "🟢 Online", inline: true },
+          { name: 'Jugadores', value: `${status.players.online}/${status.players.max}`, inline: true },
+          { name: 'MOTD', value: status.motd.clean }
         )
-        .setFooter({ text: "Actualizado cada vez que usas /estado" })
+        .setFooter({ text: "Actualizado al usar /estado" })
         .setTimestamp();
 
       await interaction.editReply({ embeds: [embed] });
 
     } catch (err) {
       console.error(err);
-      await interaction.editReply("⚠️ Error al obtener el estado del servidor.");
+      const embed = new EmbedBuilder()
+        .setColor(0xff0000)
+        .setTitle(`Estado del Servidor`)
+        .setDescription(`IP: **${SERVER_IP}**`)
+        .addFields(
+          { name: 'Estado', value: "🔴 Offline", inline: true },
+          { name: 'Jugadores', value: "0/0", inline: true },
+          { name: 'MOTD', value: "Sin MOTD" }
+        )
+        .setFooter({ text: "Actualizado al usar /estado" })
+        .setTimestamp();
+
+      await interaction.editReply({ embeds: [embed] });
     }
   }
 };
