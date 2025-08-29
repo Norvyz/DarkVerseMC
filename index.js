@@ -11,10 +11,10 @@ const {
 } = require("discord.js");
 const fs = require("fs");
 const express = require("express");
-const fetch = require("node-fetch");
+const util = require("minecraft-server-util");
 
 // =======================
-// Servidor Express (Render)
+// Servidor Express (para mantener vivo en hosting)
 // =======================
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -52,13 +52,31 @@ for (const file of commandFiles) {
 }
 
 // =======================
-// Estado del Servidor
+// Configuración del servidor
 // =======================
-const SERVER_IP = "DarkVerseeMC.aternos.me"; // 👈 tu IP del server
-const API_URL = `https://api.mcstatus.io/v2/status/java/${SERVER_IP}`;
-const ESTADO_CHANNEL_ID = "1410707017483681943"; // 👈 cámbialo por el canal real
-const UPDATE_INTERVAL = 2 * 60 * 1000; // cada 2 minutos
+const SERVER_IP = "DarkVerseeMC.aternos.me"; // 👈 dominio Aternos
+const ESTADO_CHANNEL_ID = "1410707017483681943"; // 👈 cámbialo por tu canal real
+const UPDATE_INTERVAL = 5 * 60 * 1000; // cada 5 minutos
 
+// =======================
+// Función para obtener estado con puerto automático
+// =======================
+async function obtenerEstado() {
+  try {
+    // minecraft-server-util detecta el puerto automáticamente con enableSRV
+    const status = await util.status(SERVER_IP, undefined, {
+      timeout: 5000,
+      enableSRV: true
+    });
+    return status;
+  } catch (err) {
+    return null; // offline
+  }
+}
+
+// =======================
+// Actualizar Estado en canal
+// =======================
 async function actualizarEstado() {
   try {
     const channel = await client.channels.fetch(ESTADO_CHANNEL_ID);
@@ -68,26 +86,34 @@ async function actualizarEstado() {
     const mensajes = await channel.messages.fetch({ limit: 10 });
     const estadoMsg = mensajes.find(m => m.author.id === client.user.id);
 
-    const res = await fetch(API_URL);
-    const data = await res.json();
+    const status = await obtenerEstado();
 
-    let online = data.online ? "🟢 Online" : "🔴 Offline";
-    let players = data.players?.online || 0;
-    let maxPlayers = data.players?.max || 0;
-    let version = data.version?.name_clean || "Desconocida";
-    let motd = data.motd?.clean || "Sin MOTD";
-
-    const embed = new EmbedBuilder()
-      .setColor(data.online ? 0x00ff00 : 0xff0000)
-      .setTitle(`<a:mcbeespin:1410336563497406514> Estado del Servidor`)
-      .setDescription(`IP: **${SERVER_IP}**\nVersión: **${version}**`)
-      .addFields(
-        { name: '<a:Arrow:1384710523970392115> Estado', value: online, inline: true },
-        { name: '<a:Arrow:1384710523970392115> Jugadores', value: `${players}/${maxPlayers}`, inline: true },
-        { name: '<a:Arrow:1384710523970392115> MOTD', value: motd }
-      )
-      .setFooter({ text: "Se actualiza automáticamente cada 2 minutos ⏳" })
-      .setTimestamp();
+    let embed;
+    if (status) {
+      embed = new EmbedBuilder()
+        .setColor(0x00ff00)
+        .setTitle(`<a:mcbeespin:1410336563497406514> Estado del Servidor`)
+        .setDescription(`IP: **${SERVER_IP}:${status.port}**\nVersión: **${status.version.name}**`)
+        .addFields(
+          { name: 'Estado', value: "🟢 Online", inline: true },
+          { name: 'Jugadores', value: `${status.players.online}/${status.players.max}`, inline: true },
+          { name: 'MOTD', value: status.motd.clean }
+        )
+        .setFooter({ text: "Se actualiza automáticamente cada 5 minutos ⏳" })
+        .setTimestamp();
+    } else {
+      embed = new EmbedBuilder()
+        .setColor(0xff0000)
+        .setTitle(`Estado del Servidor`)
+        .setDescription(`IP: **${SERVER_IP}**`)
+        .addFields(
+          { name: 'Estado', value: "🔴 Offline", inline: true },
+          { name: 'Jugadores', value: "0/0", inline: true },
+          { name: 'MOTD', value: "Sin MOTD" }
+        )
+        .setFooter({ text: "Se actualiza automáticamente cada 5 minutos ⏳" })
+        .setTimestamp();
+    }
 
     if (estadoMsg) {
       await estadoMsg.edit({ embeds: [embed] });
@@ -132,6 +158,3 @@ client.on("interactionCreate", async interaction => {
 // Login del bot
 // =======================
 client.login(process.env.TOKEN);
-
-
-
