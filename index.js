@@ -12,6 +12,7 @@ const {
 const fs = require("fs");
 const express = require("express");
 const util = require("minecraft-server-util");
+const sqlite3 = require("sqlite3").verbose(); // ✅ SQLite agregado
 
 // =======================
 // Servidor Express (para mantener vivo en hosting)
@@ -42,6 +43,26 @@ const client = new Client({
 client.commands = new Collection();
 
 // =======================
+// Base de datos SQLite
+// =======================
+const db = new sqlite3.Database("./database.sqlite", (err) => {
+  if (err) {
+    console.error("❌ Error conectando a SQLite:", err.message);
+  } else {
+    console.log("✅ Conectado a SQLite");
+  }
+});
+
+// Crear tabla para boost si no existe
+db.run(`CREATE TABLE IF NOT EXISTS boost (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  info TEXT NOT NULL
+)`);
+
+// exportamos para que los comandos puedan usar la DB
+client.db = db;
+
+// =======================
 // Cargar Comandos
 // =======================
 const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
@@ -63,7 +84,6 @@ const UPDATE_INTERVAL = 5 * 60 * 1000; // cada 5 minutos
 // =======================
 async function obtenerEstado() {
   try {
-    // minecraft-server-util detecta el puerto automáticamente con enableSRV
     const status = await util.status(SERVER_IP, undefined, {
       timeout: 5000,
       enableSRV: true
@@ -82,7 +102,6 @@ async function actualizarEstado() {
     const channel = await client.channels.fetch(ESTADO_CHANNEL_ID);
     if (!channel) return console.log("❌ No encontré el canal de estado.");
 
-    // buscamos si ya hay un mensaje del bot
     const mensajes = await channel.messages.fetch({ limit: 10 });
     const estadoMsg = mensajes.find(m => m.author.id === client.user.id);
 
@@ -131,12 +150,10 @@ async function actualizarEstado() {
 // =======================
 client.once("ready", () => {
   console.log(`✅ Bot conectado como ${client.user.tag}`);
-  // inicia el loop automático
   actualizarEstado();
   setInterval(actualizarEstado, UPDATE_INTERVAL);
 });
 
-// Manejo de comandos
 client.on("interactionCreate", async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
@@ -144,7 +161,7 @@ client.on("interactionCreate", async interaction => {
   if (!command) return;
 
   try {
-    await command.execute(interaction);
+    await command.execute(interaction, client); // ✅ pasamos client con db incluida
   } catch (error) {
     console.error(error);
     await interaction.reply({ 
