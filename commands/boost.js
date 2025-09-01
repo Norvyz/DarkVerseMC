@@ -17,10 +17,10 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor(0xFF69B4)
-            .setTitle("🚀 Información del Boost del Servidor")
+            .setTitle("<a:Flecha:1412207604104429741.> Información del Boost del Servidor")
             .addFields(
-                { name: "✨ Boosts", value: row.boosts, inline: true },
-                { name: "💾 RAM", value: row.ram, inline: true }
+                { name: "<a:MinecraftXP:1410329876162019498.> Boosts", value: row.boosts, inline: true },
+                { name: "<a:evilduck:1412213726190506134> RAM", value: row.ram, inline: true }
             )
             .setFooter({ text: "Actualizado por el staff" });
 
