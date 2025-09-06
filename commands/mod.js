@@ -10,9 +10,10 @@ module.exports = {
       .setTitle("🧩 Mods del servidor")
       .setDescription(`
 <a:_minehub_:1410329873196650667> **Descarga aquí:**  
-[📦 Link de Mods](https://www.mediafire.com/file/xoi8jx51he9qcks/Mods_DarkVerse.rar/file)
+[📦 Link de Mods](https://www.mediafire.com/file/pqkcovw52lrqnzh/Mods+Darkverse.rar/file)
       `);
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
   },
 };
+
