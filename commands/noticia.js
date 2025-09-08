@@ -13,8 +13,7 @@ module.exports = {
       .addFields(
         {
           name: "<a:Rainbowminecraftsheep:1410329877692940338> IP & Versión",
-          value: "```DarkVerseeMC.aternos.me",
-          value: "```1.20.1 Forge)```"
+          value: "```DarkVerseeMC.aternos.me \n(1.20.1 Forge)```",
           inline: false
         },
         {
@@ -53,5 +52,3 @@ module.exports = {
     await interaction.reply({ embeds: [embed] });
   },
 };
-
-
