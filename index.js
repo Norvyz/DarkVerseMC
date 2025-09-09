@@ -145,6 +145,12 @@ async function actualizarEstado() {
   }
 }
 
+// Crear tabla para panel de boost si no existe
+db.run(`CREATE TABLE IF NOT EXISTS boost_panel (
+  id INTEGER PRIMARY KEY,
+  messageId TEXT
+)`);
+
 // =======================
 // Eventos
 // =======================
