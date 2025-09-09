@@ -1,6 +1,3 @@
-// =======================
-// commands/config-boost.js
-// =======================
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const config = require("../config.json");
 
@@ -8,7 +5,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("config-boost")
     .setDescription("Configura la RAM y los boosts del servidor (solo staff).")
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator) // Solo staff
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addIntegerOption(option =>
       option.setName("ram")
         .setDescription("Cantidad de RAM (MB)")
@@ -25,30 +22,20 @@ module.exports = {
     const boosts = interaction.options.getString("boosts");
     const boostChannelId = config.boostChannel;
 
-    if (!boostChannelId) {
-      return interaction.reply({ content: "❌ No hay canal configurado en config.json", ephemeral: true });
-    }
-
     const channel = await client.channels.fetch(boostChannelId);
     if (!channel) {
       return interaction.reply({ content: "❌ No encontré el canal de boosts.", ephemeral: true });
     }
 
-    // =======================
-    // Guardar configuración en DB (tabla boost)
-    // =======================
+    // Borrar config anterior en tabla boost
     await new Promise((resolve, reject) => {
-      client.db.run(`DELETE FROM boost`, err => {
-        if (err) reject(err);
-        else resolve();
-      });
+      client.db.run(`DELETE FROM boost`, err => err ? reject(err) : resolve());
     });
 
+    // Guardar nueva config
     client.db.run(`INSERT INTO boost (info) VALUES (?)`, [`RAM: ${ram}, Boosts: ${boosts}`]);
 
-    // =======================
-    // Crear embed con la info
-    // =======================
+    // Embed
     const embed = new EmbedBuilder()
       .setColor(0x5865F2)
       .setTitle("🚀 Configuración del Servidor")
@@ -59,9 +46,7 @@ module.exports = {
       .setFooter({ text: "Actualizado con /config-boost" })
       .setTimestamp();
 
-    // =======================
-    // Buscar mensaje en boost_panel
-    // =======================
+    // Buscar si ya hay mensaje guardado en boost_panel
     let row = await new Promise((resolve, reject) => {
       client.db.get(`SELECT messageId FROM boost_panel WHERE id = 1`, (err, row) => {
         if (err) reject(err);
@@ -69,32 +54,28 @@ module.exports = {
       });
     }).catch(() => null);
 
-    let message;
     if (row && row.messageId) {
       try {
-        message = await channel.messages.fetch(row.messageId);
-        await message.edit({ embeds: [embed] });
-        console.log("✅ Mensaje del panel editado.");
+        const msg = await channel.messages.fetch(row.messageId);
+        await msg.edit({ embeds: [embed] });
+        console.log("✅ Mensaje editado.");
       } catch (err) {
         console.log("⚠️ No encontré el mensaje, creando uno nuevo...");
-        message = await channel.send({ embeds: [embed] });
+        const newMsg = await channel.send({ embeds: [embed] });
         client.db.run(
           `INSERT OR REPLACE INTO boost_panel (id, messageId) VALUES (1, ?)`,
-          [message.id]
+          [newMsg.id]
         );
       }
     } else {
-      message = await channel.send({ embeds: [embed] });
+      const newMsg = await channel.send({ embeds: [embed] });
       client.db.run(
         `INSERT OR REPLACE INTO boost_panel (id, messageId) VALUES (1, ?)`,
-        [message.id]
+        [newMsg.id]
       );
-      console.log("✅ Mensaje del panel creado y guardado.");
+      console.log("✅ Mensaje creado y guardado en DB.");
     }
 
-    // =======================
-    // Responder al staff
-    // =======================
     await interaction.reply({ content: "✅ Configuración actualizada en el panel.", ephemeral: true });
   }
 };
