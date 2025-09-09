@@ -59,6 +59,12 @@ db.run(`CREATE TABLE IF NOT EXISTS boost (
   info TEXT NOT NULL
 )`);
 
+// Crear tabla para panel de boost si no existe
+db.run(`CREATE TABLE IF NOT EXISTS boost_panel (
+  id INTEGER PRIMARY KEY,
+  messageId TEXT
+)`);
+
 // exportamos para que los comandos puedan usar la DB
 client.db = db;
 
@@ -145,17 +151,6 @@ async function actualizarEstado() {
   }
 }
 
-// Guardar en boost (solo texto)
-client.db.run(`DELETE FROM boost`);
-client.db.run(`INSERT INTO boost (info) VALUES (?)`, [`RAM: ${ram}, Boosts: ${boosts}`]);
-
-// Guardar en boost_panel (solo el mensajeId)
-client.db.run(
-  `INSERT OR REPLACE INTO boost_panel (id, messageId) VALUES (1, ?)`,
-  [message.id]
-);
-
-
 // =======================
 // Eventos
 // =======================
@@ -186,4 +181,3 @@ client.on("interactionCreate", async interaction => {
 // Login del bot
 // =======================
 client.login(process.env.TOKEN);
-
