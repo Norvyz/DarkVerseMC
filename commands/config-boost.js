@@ -79,4 +79,3 @@ module.exports = {
     await interaction.reply({ content: "✅ Configuración actualizada en el panel.", ephemeral: true });
   }
 };
-
