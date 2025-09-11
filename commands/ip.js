@@ -9,7 +9,7 @@ module.exports = {
       .setColor(0x00ffcc)
       .setTitle("<a:Minecraft:1410329874245222482> Servidor DarkVerse")
       .setDescription(`
-<a:Arrow:1384710523970392115> **IP:** \`DarkVerseeMC.aternos.me\`  
+<a:Arrow:1384710523970392115> **IP:** \`DarkVerseeMC.aternos.me:30657\`  
 <a:Arrow:1384710523970392115> **Versión:** \`1.20.1 Forge\`
       `);
 
