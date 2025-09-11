@@ -43,7 +43,7 @@ module.exports = {
         { name: "RAM", value: `${ram} MB`, inline: true },
         { name: "Boosts", value: boosts, inline: true }
       )
-      .setFooter({ text: "Actualizado con /config-boost" })
+      .setFooter({ text: "Actualizado Periodicamente" })
       .setTimestamp();
 
     // Buscar si ya hay mensaje guardado en boost_panel
@@ -79,3 +79,4 @@ module.exports = {
     await interaction.reply({ content: "✅ Configuración actualizada en el panel.", ephemeral: true });
   }
 };
+
