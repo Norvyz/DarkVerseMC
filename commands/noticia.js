@@ -18,7 +18,7 @@ module.exports = {
         },
         {
           name: "<a:MinecraftXP:1410329876162019498> Mods",
-          value: "[📦 Descarga aquí](https://www.mediafire.com/file/pqkcovw52lrqnzh/Mods+Darkverse.rar/file)",
+          value: "[📦 Descarga aquí](https://www.mediafire.com/file/3c6bwyul7djt9h3/Mods+DarkVerse.rar/file)",
           inline: false
         },
         {
@@ -52,3 +52,4 @@ module.exports = {
     await interaction.reply({ embeds: [embed] });
   },
 };
+
